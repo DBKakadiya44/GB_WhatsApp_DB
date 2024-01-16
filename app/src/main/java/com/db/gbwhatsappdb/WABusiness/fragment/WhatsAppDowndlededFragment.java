@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.db.gbwhatsappdb.ADS.Native;
 import com.db.gbwhatsappdb.R;
 import com.db.gbwhatsappdb.WABusiness.FullViewActivity;
 import com.db.gbwhatsappdb.WABusiness.GalleryActivity;
@@ -63,6 +64,10 @@ public class WhatsAppDowndlededFragment extends Fragment implements FileListClic
                              Bundle savedInstanceState) {
         binding = inflate(inflater, R.layout.fragment_history, container, false);
         initViews();
+
+        Native aNative = new Native(getActivity());
+        aNative.ShowNative(getActivity(), binding.nativeContainer,1);
+
         return binding.getRoot();
     }
     private void initViews(){

@@ -1,5 +1,6 @@
 package com.db.gbwhatsappdb.wa.Adapter;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +20,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
 import com.db.gbwhatsappdb.R;
 import com.db.gbwhatsappdb.VideoPreviewActivity;
 import com.db.gbwhatsappdb.wa.Models.Status;
@@ -53,6 +56,9 @@ public class VideoAdapter extends RecyclerView.Adapter<ItemViewHolder> {
 
         final Status status = videoList.get(position);
 
+        AdsManager adsManager = new AdsManager(context);
+        InterstitialAD helper = new InterstitialAD(context, (Activity) context,adsManager);
+
         if (status.isApi30()) {
 //            holder.save.setVisibility(View.GONE);
             Glide.with(context).load(status.getDocumentFile().getUri()).into(holder.imageView);
@@ -71,7 +77,16 @@ public class VideoAdapter extends RecyclerView.Adapter<ItemViewHolder> {
             } else {
                 shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + status.getFile().getAbsolutePath()));
             }
-            context.startActivity(Intent.createChooser(shareIntent, "Share image"));
+            helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                @Override
+                public void onAdLoadFailed() {
+                    context.startActivity(Intent.createChooser(shareIntent, "Share image"));
+                }
+                @Override
+                public void onInterstitialDismissed() {
+                    context.startActivity(Intent.createChooser(shareIntent, "Share image"));
+                }
+            });
 
         });
 
@@ -80,60 +95,34 @@ public class VideoAdapter extends RecyclerView.Adapter<ItemViewHolder> {
 
         holder.imageView.setOnClickListener(v -> {
 
-            Intent intent = new Intent(context , VideoPreviewActivity.class);
-            intent.putExtra("pos",position);
-            context.startActivity(intent);
-
-            /*final AlertDialog.Builder alertDg = new AlertDialog.Builder(context);
-
-            FrameLayout mediaControls = view1.findViewById(R.id.videoViewWrapper);
-
-            if (view1.getParent() != null) {
-                ((ViewGroup) view1.getParent()).removeView(view1);
-            }
-
-            alertDg.setView(view1);
-
-            VideoView videoView = view1.findViewById(R.id.video_full);
-
-            MediaController mediaController = new MediaController(context, false);
-
-            videoView.setOnPreparedListener(mp -> {
-
-                mp.start();
-                mediaController.show(0);
-                mp.setLooping(true);
+            helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                @Override
+                public void onAdLoadFailed() {
+                    Intent intent = new Intent(context , VideoPreviewActivity.class);
+                    intent.putExtra("pos",position);
+                    context.startActivity(intent);
+                }
+                @Override
+                public void onInterstitialDismissed() {
+                    Intent intent = new Intent(context , VideoPreviewActivity.class);
+                    intent.putExtra("pos",position);
+                    context.startActivity(intent);
+                }
             });
-
-            videoView.setMediaController(mediaController);
-            mediaController.setMediaPlayer(videoView);
-
-            if (status.isApi30()) {
-                videoView.setVideoURI(status.getDocumentFile().getUri());
-            } else {
-                videoView.setVideoURI(Uri.fromFile(status.getFile()));
-            }
-            videoView.requestFocus();
-
-            ((ViewGroup) mediaController.getParent()).removeView(mediaController);
-
-            if (mediaControls.getParent() != null) {
-                mediaControls.removeView(mediaController);
-            }
-
-            mediaControls.addView(mediaController);
-
-            final AlertDialog alert2 = alertDg.create();
-
-            alert2.getWindow().getAttributes().windowAnimations = R.style.SlidingDialogAnimation;
-            alert2.requestWindowFeature(Window.FEATURE_NO_TITLE);
-            alert2.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
-            alert2.show();
-*/
         });
 
-        holder.save.setOnClickListener(v -> Common.copyFile(status, context, container));
+        holder.save.setOnClickListener(v -> {
+            helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                @Override
+                public void onAdLoadFailed() {
+                    Common.copyFile(status, context, container);
+                }
+                @Override
+                public void onInterstitialDismissed() {
+                    Common.copyFile(status, context, container);
+                }
+            });
+        });
 
     }
 

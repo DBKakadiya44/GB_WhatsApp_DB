@@ -1,5 +1,6 @@
 package com.db.gbwhatsappdb.wa.Adapter;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +22,8 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
 import com.db.gbwhatsappdb.R;
 import com.db.gbwhatsappdb.wa.Models.Status;
 
@@ -53,6 +56,9 @@ public class FilesAdapter extends RecyclerView.Adapter<ItemViewHolder> {
         holder.share.setVisibility(View.VISIBLE);
         holder.save.setVisibility(View.VISIBLE);
 
+        AdsManager adsManager = new AdsManager(context);
+        InterstitialAD helper = new InterstitialAD(context, (Activity) context,adsManager);
+
         final Status status = imagesList.get(position);
 
         if (status.isApi30()) {
@@ -61,24 +67,30 @@ public class FilesAdapter extends RecyclerView.Adapter<ItemViewHolder> {
             Glide.with(context).load(status.getFile()).into(holder.imageView);
         }
 
-//        if (status.isVideo())
-//            Glide.with(context).asBitmap().load(status.getFile()).into(holder.imageView);
-////            holder.imageView.setImageBitmap(status.getThumbnail());
-//        else {
-//            if(status.isApi30()) {
-//                Glide.with(context).load(status.getDocumentFile().getUri()).into(holder.imageView);
-//            } else  {
-//                Glide.with(context).load(status.getFile()).into(holder.imageView);
-//            }
-//        }
-
         holder.save.setOnClickListener(view -> {
-            if (status.getFile().delete()) {
-                imagesList.remove(position);
-                notifyDataSetChanged();
-                Toast.makeText(context, "File Deleted", Toast.LENGTH_SHORT).show();
-            } else
-                Toast.makeText(context, "Unable to Delete File", Toast.LENGTH_SHORT).show();
+
+            helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                @Override
+                public void onAdLoadFailed() {
+                    if (status.getFile().delete()) {
+                        imagesList.remove(position);
+                        notifyDataSetChanged();
+                        Toast.makeText(context, "File Deleted", Toast.LENGTH_SHORT).show();
+                    } else
+                        Toast.makeText(context, "Unable to Delete File", Toast.LENGTH_SHORT).show();
+                }
+                @Override
+                public void onInterstitialDismissed() {
+                    if (status.getFile().delete()) {
+                        imagesList.remove(position);
+                        notifyDataSetChanged();
+                        Toast.makeText(context, "File Deleted", Toast.LENGTH_SHORT).show();
+                    } else
+                        Toast.makeText(context, "Unable to Delete File", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+
         });
 
         holder.share.setOnClickListener(v -> {
@@ -91,7 +103,17 @@ public class FilesAdapter extends RecyclerView.Adapter<ItemViewHolder> {
                 shareIntent.setType("image/jpg");
 
             shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + status.getFile().getAbsolutePath()));
-            context.startActivity(Intent.createChooser(shareIntent, "Share image"));
+
+            helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                @Override
+                public void onAdLoadFailed() {
+                    context.startActivity(Intent.createChooser(shareIntent, "Share image"));
+                }
+                @Override
+                public void onInterstitialDismissed() {
+                    context.startActivity(Intent.createChooser(shareIntent, "Share image"));
+                }
+            });
 
         });
 

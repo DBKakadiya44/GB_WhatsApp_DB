@@ -7,5 +7,7 @@
     <color name="lightgreen">#0F8E1B</color>
     <color name="darkgreen">#01875F</color>
     <color name="appbar">#08192B</color>
+    <color name="maincolor">#01875F</color>
+    <color name="adload">#F7FFFD</color>
 
 </resources>

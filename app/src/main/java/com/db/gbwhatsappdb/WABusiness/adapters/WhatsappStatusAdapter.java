@@ -3,6 +3,7 @@ package com.db.gbwhatsappdb.WABusiness.adapters;
 import static com.db.gbwhatsappdb.WABusiness.util_items.Utils.RootDirectoryWhatsappShow;
 import static com.db.gbwhatsappdb.WABusiness.util_items.Utils.createFileFolder;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +21,8 @@ import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
 import com.db.gbwhatsappdb.R;
 import com.db.gbwhatsappdb.WABusiness.VideoPlayerActivity;
 import com.db.gbwhatsappdb.WABusiness.all_interfaces.FileListWhatsappClickInterface;
@@ -86,70 +89,98 @@ public class WhatsappStatusAdapter extends RecyclerView.Adapter<WhatsappStatusAd
                     .into(viewHolder.binding.pcw);
         }
 
+        AdsManager adsManager = new AdsManager(context);
+        InterstitialAD helper = new InterstitialAD(context, (Activity) context,adsManager);
 
         viewHolder.binding.tvDownload.setOnClickListener(view -> {
-            createFileFolder();
-
-            if (Build.VERSION.SDK_INT>Build.VERSION_CODES.Q){
-                try {
-                    if (fileItem.getUri().toString().endsWith(".mp4")) {
-                        fileName= "status_Saver_"+System.currentTimeMillis()+".mp4";
-                        new DownloadFileTask().execute(fileItem.getUri().toString());
-                    }else {
-                        fileName = "status_Saver_"+System.currentTimeMillis()+".png";
-                        new DownloadFileTask().execute(fileItem.getUri().toString());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+            helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                @Override
+                public void onAdLoadFailed() {
+                    downloadmethod(fileItem);
                 }
-            }else {
-                final String path = fileItem.getPath();
-                String filename = path.substring(path.lastIndexOf("/") + 1);
-                final File file = new File(path);
-                File destFile = new File(saveFilePath);
-                try {
-                    FileUtils.copyFileToDirectory(file, destFile);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                @Override
+                public void onInterstitialDismissed() {
+                    downloadmethod(fileItem);
                 }
-                String fileNameChange = filename.substring(12);
-                File newFile = new File(saveFilePath + fileNameChange);
-                String contentType = "image/*";
-                if (fileItem.getUri().toString().endsWith(".mp4")) {
-                    contentType = "video/*";
-                } else {
-                    contentType = "image/*";
-                }
-                MediaScannerConnection.scanFile(context, new String[]{newFile.getAbsolutePath()}, new String[]{contentType},
-                        new MediaScannerConnection.MediaScannerConnectionClient() {
-                            public void onMediaScannerConnected() {
-                                //NA
-                            }
-
-                            public void onScanCompleted(String path, Uri uri) {
-                                //NA
-                            }
-                        });
-
-                File from = new File(saveFilePath, filename);
-                File to = new File(saveFilePath, fileNameChange);
-                from.renameTo(to);
-                Toast.makeText(context, "Saved to:" + saveFilePath + fileNameChange, Toast.LENGTH_LONG).show();
-            }
+            });
 
         });
+
+
 
         viewHolder.binding.ivPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                Intent intent = new Intent(context, VideoPlayerActivity.class);
-                intent.putExtra("PathVideo",fileItem.getUri().toString());
-                context.startActivity(intent);
+                helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                    @Override
+                    public void onAdLoadFailed() {
+                        Intent intent = new Intent(context, VideoPlayerActivity.class);
+                        intent.putExtra("PathVideo",fileItem.getUri().toString());
+                        context.startActivity(intent);
+                    }
+                    @Override
+                    public void onInterstitialDismissed() {
+                        Intent intent = new Intent(context, VideoPlayerActivity.class);
+                        intent.putExtra("PathVideo",fileItem.getUri().toString());
+                        context.startActivity(intent);
+                    }
+                });
 
             }
         });
     }
+
+    private void downloadmethod(WhatsappStatusModel fileItem) {
+        createFileFolder();
+
+        if (Build.VERSION.SDK_INT>Build.VERSION_CODES.Q){
+            try {
+                if (fileItem.getUri().toString().endsWith(".mp4")) {
+                    fileName= "status_Saver_"+System.currentTimeMillis()+".mp4";
+                    new DownloadFileTask().execute(fileItem.getUri().toString());
+                }else {
+                    fileName = "status_Saver_"+System.currentTimeMillis()+".png";
+                    new DownloadFileTask().execute(fileItem.getUri().toString());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }else {
+            final String path = fileItem.getPath();
+            String filename = path.substring(path.lastIndexOf("/") + 1);
+            final File file = new File(path);
+            File destFile = new File(saveFilePath);
+            try {
+                FileUtils.copyFileToDirectory(file, destFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            String fileNameChange = filename.substring(12);
+            File newFile = new File(saveFilePath + fileNameChange);
+            String contentType = "image/*";
+            if (fileItem.getUri().toString().endsWith(".mp4")) {
+                contentType = "video/*";
+            } else {
+                contentType = "image/*";
+            }
+            MediaScannerConnection.scanFile(context, new String[]{newFile.getAbsolutePath()}, new String[]{contentType},
+                    new MediaScannerConnection.MediaScannerConnectionClient() {
+                        public void onMediaScannerConnected() {
+                            //NA
+                        }
+
+                        public void onScanCompleted(String path, Uri uri) {
+                            //NA
+                        }
+                    });
+
+            File from = new File(saveFilePath, filename);
+            File to = new File(saveFilePath, fileNameChange);
+            from.renameTo(to);
+            Toast.makeText(context, "Saved to:" + saveFilePath + fileNameChange, Toast.LENGTH_LONG).show();
+        }
+    }
+
     @Override
     public int getItemCount() {
         return fileArrayList == null ? 0 : fileArrayList.size();

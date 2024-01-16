@@ -1,5 +1,6 @@
 package com.db.gbwhatsappdb.wa.Adapter;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -12,9 +13,13 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
 import com.db.gbwhatsappdb.ImagePreviewActivity;
 import com.db.gbwhatsappdb.R;
 import com.db.gbwhatsappdb.wa.Models.Status;
@@ -56,7 +61,21 @@ public class ImageAdapter extends RecyclerView.Adapter<ItemViewHolder> {
             Glide.with(context).load(status.getFile()).into(holder.imageView);
         }
 
-        holder.save.setOnClickListener(v -> Common.copyFile(status, context, container));
+        AdsManager adsManager = new AdsManager(context);
+        InterstitialAD helper = new InterstitialAD(context, (Activity) context,adsManager);
+
+        holder.save.setOnClickListener(v -> {
+            helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                @Override
+                public void onAdLoadFailed() {
+                    Common.copyFile(status, context, container);
+                }
+                @Override
+                public void onInterstitialDismissed() {
+                    Common.copyFile(status, context, container);
+                }
+            });
+        });
 
         holder.share.setOnClickListener(v -> {
 
@@ -70,33 +89,35 @@ public class ImageAdapter extends RecyclerView.Adapter<ItemViewHolder> {
                 shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + status.getFile().getAbsolutePath()));
             }
 
-            context.startActivity(Intent.createChooser(shareIntent, "Share image"));
+            helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                @Override
+                public void onAdLoadFailed() {
+                    context.startActivity(Intent.createChooser(shareIntent, "Share image"));
+                }
+                @Override
+                public void onInterstitialDismissed() {
+                    context.startActivity(Intent.createChooser(shareIntent, "Share image"));
+                }
+            });
 
         });
 
         holder.imageView.setOnClickListener(v -> {
 
-            Intent intent = new Intent(context , ImagePreviewActivity.class);
-            intent.putExtra("pos",position);
-            context.startActivity(intent);
-
-/*            AlertDialog.Builder alertD = new AlertDialog.Builder(context);
-            LayoutInflater inflater = LayoutInflater.from(context);
-            View view = inflater.inflate(R.layout.view_image_full_screen, null);
-            alertD.setView(view);
-
-            ImageView imageView = view.findViewById(R.id.img);
-            if (status.isApi30()) {
-                Glide.with(context).load(status.getDocumentFile().getUri()).into(imageView);
-            } else {
-                Glide.with(context).load(status.getFile()).into(imageView);
-            }
-
-            AlertDialog alert = alertD.create();
-            alert.getWindow().getAttributes().windowAnimations = R.style.SlidingDialogAnimation;
-            alert.requestWindowFeature(Window.FEATURE_NO_TITLE);
-            alert.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            alert.show();*/
+            helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                @Override
+                public void onAdLoadFailed() {
+                    Intent intent = new Intent(context, ImagePreviewActivity.class);
+                    intent.putExtra("pos", position);
+                    context.startActivity(intent);
+                }
+                @Override
+                public void onInterstitialDismissed() {
+                    Intent intent = new Intent(context, ImagePreviewActivity.class);
+                    intent.putExtra("pos", position);
+                    context.startActivity(intent);
+                }
+            });
 
         });
 

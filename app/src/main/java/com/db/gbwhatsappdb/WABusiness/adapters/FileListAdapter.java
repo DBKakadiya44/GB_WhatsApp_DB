@@ -1,6 +1,7 @@
 package com.db.gbwhatsappdb.WABusiness.adapters;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -12,6 +13,8 @@ import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
 import com.db.gbwhatsappdb.R;
 import com.db.gbwhatsappdb.WABusiness.VideoPlayerActivity;
 import com.db.gbwhatsappdb.WABusiness.all_interfaces.FileListClickInterface;
@@ -45,6 +48,9 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, @SuppressLint("RecyclerView") int i) {
         File fileItem = fileArrayList.get(i);
 
+        AdsManager adsManager = new AdsManager(context);
+        InterstitialAD helper = new InterstitialAD(context, (Activity) context,adsManager);
+
         try {
             String extension = fileItem.getName().substring(fileItem.getName().lastIndexOf("."));
             if (extension.equals(".mp4")) {
@@ -69,7 +75,16 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
         viewHolder.mbinding.rlMain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fileListClickInterface.getPosition(i,fileItem);
+                helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                    @Override
+                    public void onAdLoadFailed() {
+                        fileListClickInterface.getPosition(i,fileItem);
+                    }
+                    @Override
+                    public void onInterstitialDismissed() {
+                        fileListClickInterface.getPosition(i,fileItem);
+                    }
+                });
             }
         });
     }

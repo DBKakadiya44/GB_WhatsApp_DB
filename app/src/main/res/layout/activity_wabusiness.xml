@@ -88,8 +88,9 @@
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_below="@+id/RLTab"
+                android:layout_above="@+id/bannerLayout"
                 android:layout_marginTop="@dimen/_5sdp"
                 android:orientation="vertical"
                 android:visibility="visible">
@@ -116,6 +117,12 @@
 
             </RelativeLayout>
 
+            <LinearLayout
+                android:id="@+id/bannerLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:orientation="vertical" />
 
         </RelativeLayout>
 

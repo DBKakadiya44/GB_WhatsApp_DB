@@ -76,7 +76,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/_42sdp"
         android:background="@drawable/rounded_edittext"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toTopOf="@+id/bannerLayout">
 
         <ImageView
             android:id="@+id/download"
@@ -95,5 +95,15 @@
             android:src="@drawable/ic_shareee" />
 
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/bannerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

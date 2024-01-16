@@ -1,5 +1,6 @@
 package com.db.gbwhatsappdb.WABusiness;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -13,6 +14,8 @@ import android.widget.VideoView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
 import com.db.gbwhatsappdb.R;
 
 
@@ -67,9 +70,21 @@ public class VideoPlayerActivity extends AppCompatActivity {
         }
 
     }
-
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        AdsManager adsManager = new AdsManager(this);
+        InterstitialAD helper = new InterstitialAD(this,this,adsManager);
+        helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+            @Override
+            public void onAdLoadFailed() {
+                finish();
+            }
+
+            @Override
+            public void onInterstitialDismissed() {
+                finish();
+            }
+        });
     }
 }

@@ -2,6 +2,8 @@ package com.db.gbwhatsappdb.WABusiness.adapters;
 
 import static com.db.gbwhatsappdb.WABusiness.util_items.Utils.shareImage;
 import static com.db.gbwhatsappdb.WABusiness.util_items.Utils.shareVideo;
+
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Parcelable;
@@ -11,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import androidx.viewpager.widget.PagerAdapter;
 import com.bumptech.glide.Glide;
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
 import com.db.gbwhatsappdb.R;
 import com.db.gbwhatsappdb.WABusiness.FullViewActivity;
 import com.db.gbwhatsappdb.WABusiness.VideoPlayerActivity;
@@ -47,6 +51,9 @@ public class ShowImagesAdapter extends PagerAdapter {
     public Object instantiateItem(@NotNull ViewGroup view, int position) {
         View imageLayout = inflater.inflate(R.layout.slidingimages_layout, view, false);
 
+        AdsManager adsManager = new AdsManager(context);
+        InterstitialAD helper = new InterstitialAD(context, (Activity) context,adsManager);
+
         assert imageLayout != null;
         final ImageView imageView = imageLayout.findViewById(R.id.im_fullViewImage);
         final ImageView im_vpPlay = imageLayout.findViewById(R.id.im_vpPlay);
@@ -65,14 +72,21 @@ public class ShowImagesAdapter extends PagerAdapter {
 
 
         im_vpPlay.setOnClickListener(v -> {
-//            Intent intent = new Intent(Intent.ACTION_VIEW);
-//            intent.setDataAndType(Uri.parse(imageList.get(position).getPath()), "video/*");
-//            context.startActivity(intent);
+            helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                @Override
+                public void onAdLoadFailed() {
+                    Intent intent = new Intent(context, VideoPlayerActivity.class);
+                    intent.putExtra("PathVideo",imageList.get(position).getPath());
+                    context.startActivity(intent);
+                }
+                @Override
+                public void onInterstitialDismissed() {
+                    Intent intent = new Intent(context, VideoPlayerActivity.class);
+                    intent.putExtra("PathVideo",imageList.get(position).getPath());
+                    context.startActivity(intent);
+                }
+            });
 
-
-            Intent intent = new Intent(context, VideoPlayerActivity.class);
-            intent.putExtra("PathVideo",imageList.get(position).getPath());
-            context.startActivity(intent);
         });
 
         im_delete.setOnClickListener(new View.OnClickListener() {

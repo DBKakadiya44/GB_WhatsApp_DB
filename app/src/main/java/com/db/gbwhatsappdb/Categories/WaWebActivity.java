@@ -25,6 +25,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
 import com.db.gbwhatsappdb.HelperUtils;
 import com.db.gbwhatsappdb.PrefManager;
 import com.db.gbwhatsappdb.R;
@@ -43,6 +45,7 @@ public class WaWebActivity extends AppCompatActivity {
     PrefManager pref;
     ProgressDialog progressDialog;
     ImageView refresh;
+    InterstitialAD helper;
     private AppCompatButton retryBtton;
     ConstraintLayout root_view;
 
@@ -56,6 +59,9 @@ public class WaWebActivity extends AppCompatActivity {
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(ContextCompat.getColor(this, R.color.appbar));
+
+        AdsManager adsManager = new AdsManager(this);
+        helper = new InterstitialAD(this,this,adsManager);
 
         binding.imageView3.setOnClickListener(view -> {
             onBackPressed();
@@ -225,5 +231,21 @@ public class WaWebActivity extends AppCompatActivity {
             }
         }
     }
+    @SuppressLint("MissingSuperCall")
+    @Override
+    public void onBackPressed() {
+        AdsManager adsManager = new AdsManager(this);
+        InterstitialAD helper = new InterstitialAD(this,this,adsManager);
+        helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+            @Override
+            public void onAdLoadFailed() {
+                finish();
+            }
 
+            @Override
+            public void onInterstitialDismissed() {
+                finish();
+            }
+        });
+    }
 }

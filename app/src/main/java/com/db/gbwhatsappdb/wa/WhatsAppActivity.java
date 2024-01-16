@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,6 +31,10 @@ import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import static com.db.gbwhatsappdb.R.*;
+
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.BannerAD;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
 import com.db.gbwhatsappdb.R;
 import com.db.gbwhatsappdb.wa.Adapter.PageAdapter;
 import com.db.gbwhatsappdb.wa.Utils.Common;
@@ -88,6 +93,13 @@ public class WhatsAppActivity extends AppCompatActivity {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(ContextCompat.getColor(this, R.color.appbar));
 
+        AdsManager adsManager = new AdsManager(this);
+        InterstitialAD helper = new InterstitialAD(this,this,adsManager);
+
+        LinearLayout banner = findViewById(R.id.bannerLayout);
+        BannerAD bannerAd = new BannerAD(this, banner);
+        bannerAd.loadBannerAd();
+
         context = getApplicationContext();
 
         imgback = findViewById(R.id.imgback);
@@ -113,7 +125,17 @@ public class WhatsAppActivity extends AppCompatActivity {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                viewPager.setCurrentItem(tab.getPosition());
+                helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                    @Override
+                    public void onAdLoadFailed() {
+                        viewPager.setCurrentItem(tab.getPosition());
+                    }
+                    @Override
+                    public void onInterstitialDismissed() {
+                        viewPager.setCurrentItem(tab.getPosition());
+                    }
+                });
+
             }
 
             @Override
@@ -209,20 +231,24 @@ public class WhatsAppActivity extends AppCompatActivity {
         activityResultLauncher.launch(intent);
     }
 
+
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
+        AdsManager adsManager = new AdsManager(this);
+        InterstitialAD helper = new InterstitialAD(this,this,adsManager);
+        helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+            @Override
+            public void onAdLoadFailed() {
+                finish();
+            }
 
-        super.onBackPressed();
-        if (back_pressed + 2000 > System.currentTimeMillis()) {
-            finish();
-            moveTaskToBack(true);
-        } else {
-            Snackbar.make(viewPager, "Press Again to Exit", Snackbar.LENGTH_LONG).show();
-            back_pressed = System.currentTimeMillis();
-        }
+            @Override
+            public void onInterstitialDismissed() {
+                finish();
+            }
+        });
     }
-
-
 
 
 }

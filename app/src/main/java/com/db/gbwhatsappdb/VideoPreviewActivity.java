@@ -3,6 +3,7 @@ package com.db.gbwhatsappdb;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,9 +11,13 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.MediaController;
 import android.widget.VideoView;
 
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.BannerAD;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
 import com.db.gbwhatsappdb.databinding.ActivityVideoPreviewBinding;
 import com.db.gbwhatsappdb.wa.Adapter.VideoAdapter;
 import com.db.gbwhatsappdb.wa.Models.Status;
@@ -32,6 +37,13 @@ public class VideoPreviewActivity extends AppCompatActivity {
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(ContextCompat.getColor(this, R.color.appbar));
+
+        AdsManager adsManager = new AdsManager(this);
+        InterstitialAD helper = new InterstitialAD(this,this,adsManager);
+
+        LinearLayout banner = findViewById(R.id.bannerLayout);
+        BannerAD bannerAd = new BannerAD(this, banner);
+        bannerAd.loadBannerAd();
 
         pos = getIntent().getIntExtra("pos",0);
 
@@ -84,5 +96,23 @@ public class VideoPreviewActivity extends AppCompatActivity {
 
         binding.download.setOnClickListener(v -> Common.copyFile(status, this, binding.relative));
 
+    }
+
+    @SuppressLint("MissingSuperCall")
+    @Override
+    public void onBackPressed() {
+        AdsManager adsManager = new AdsManager(this);
+        InterstitialAD helper = new InterstitialAD(this,this,adsManager);
+        helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+            @Override
+            public void onAdLoadFailed() {
+                finish();
+            }
+
+            @Override
+            public void onInterstitialDismissed() {
+                finish();
+            }
+        });
     }
 }

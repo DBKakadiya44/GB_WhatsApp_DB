@@ -5,10 +5,16 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.BannerAD;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
+import com.db.gbwhatsappdb.ADS.Native;
 import com.db.gbwhatsappdb.Categories.Adapters.CaptionAdapter;
 import com.db.gbwhatsappdb.R;
 import com.db.gbwhatsappdb.databinding.ActivityCaptionBinding;
@@ -50,6 +56,16 @@ public class CaptionActivity extends AppCompatActivity {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(ContextCompat.getColor(this, R.color.appbar));
 
+        Native aNative = new Native(this);
+        aNative.ShowNative(this, findViewById(R.id.native_container), 1);
+
+        AdsManager adsManager = new AdsManager(this);
+        InterstitialAD helper = new InterstitialAD(this, this, adsManager);
+
+        LinearLayout banner = findViewById(R.id.bannerLayout);
+        BannerAD bannerAd = new BannerAD(this, banner);
+        bannerAd.loadBannerAd();
+
         binding.imageView3.setOnClickListener(view -> {
             onBackPressed();
         });
@@ -59,5 +75,22 @@ public class CaptionActivity extends AppCompatActivity {
         binding.recyclercaption.setLayoutManager(manager);
         binding.recyclercaption.setAdapter(adapter);
 
+    }
+    @SuppressLint("MissingSuperCall")
+    @Override
+    public void onBackPressed() {
+        AdsManager adsManager = new AdsManager(this);
+        InterstitialAD helper = new InterstitialAD(this,this,adsManager);
+        helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+            @Override
+            public void onAdLoadFailed() {
+                finish();
+            }
+
+            @Override
+            public void onInterstitialDismissed() {
+                finish();
+            }
+        });
     }
 }

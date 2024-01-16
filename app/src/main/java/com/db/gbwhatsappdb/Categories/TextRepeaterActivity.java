@@ -26,6 +26,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
+import com.db.gbwhatsappdb.ADS.Native;
 import com.db.gbwhatsappdb.R;
 import com.db.gbwhatsappdb.databinding.ActivityTextRepeaterBinding;
 
@@ -40,6 +43,7 @@ public class TextRepeaterActivity extends AppCompatActivity {
     private SharedPreferences data;
     private boolean firstRepeat = false;
     private double historyIndex = 0.0d;
+    InterstitialAD helper;
     private Intent intent = new Intent();
     private double lineNumber = 0.0d;
     private double repeat = 0.0d;
@@ -54,45 +58,18 @@ public class TextRepeaterActivity extends AppCompatActivity {
         data = getSharedPreferences("data", 0);
 
         binding.lnRepeat.setOnClickListener(view -> {
-            _vibrate();
-            if (binding.repeatInput.getText().toString().isEmpty() || binding.howManyInput.getText().toString().isEmpty()) {
-                showMessage("Enter your text and how many repetitions");
-                return;
-            }
-            textToRepeat = "";
-            textRepeat = "";
-            lineNumber = 1.0d;
-            firstRepeat = true;
-            repeat = Double.parseDouble(binding.howManyInput.getText().toString());
-            textToRepeat = binding.repeatInput.getText().toString();
 
-            if ((textToRepeat.length() * repeat) > 100000.0d) {
-                showMessage("Character limit will be exceeded, try fewer repetitions");
-                return;
-            }
-
-            if (!binding.lineCheckbox.isChecked()) {
-                for (int i = 0; i < repeat; i++) {
-                    if (firstRepeat) {
-                        textRepeat = textToRepeat;
-                        firstRepeat = false;
-                    } else {
-                        textRepeat = textRepeat.concat("").concat(textToRepeat);
-                    }
+            helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                @Override
+                public void onAdLoadFailed() {
+                    datarepete();
                 }
-            } else {
-                for (int i = 0; i < repeat; i++) {
-                    if (firstRepeat) {
-                        textRepeat = textToRepeat;
-                        firstRepeat = false;
-                    } else {
-                        textRepeat = textRepeat.concat(System.lineSeparator()).concat(textToRepeat);
-                    }
+                @Override
+                public void onInterstitialDismissed() {
+                    datarepete();
                 }
-            }
+            });
 
-            binding.repeatedOutput.setText(textRepeat);
-            _saveHistory();
         });
 
         binding.howManyInput.addTextChangedListener(new TextWatcher() {
@@ -144,9 +121,60 @@ public class TextRepeaterActivity extends AppCompatActivity {
             if (intent.resolveActivity(getPackageManager()) == null) {
                 Toast.makeText(this, "Whatsapp not installed.", Toast.LENGTH_SHORT).show();
             } else {
-                startActivity(intent);
+                helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                    @Override
+                    public void onAdLoadFailed() {
+                        startActivity(intent);
+                    }
+                    @Override
+                    public void onInterstitialDismissed() {
+                        startActivity(intent);
+                    }
+                });
             }
         });
+    }
+
+    private void datarepete() {
+        _vibrate();
+        if (binding.repeatInput.getText().toString().isEmpty() || binding.howManyInput.getText().toString().isEmpty()) {
+            showMessage("Enter your text and how many repetitions");
+            return;
+        }
+        textToRepeat = "";
+        textRepeat = "";
+        lineNumber = 1.0d;
+        firstRepeat = true;
+        repeat = Double.parseDouble(binding.howManyInput.getText().toString());
+        textToRepeat = binding.repeatInput.getText().toString();
+
+        if ((textToRepeat.length() * repeat) > 100000.0d) {
+            showMessage("Character limit will be exceeded, try fewer repetitions");
+            return;
+        }
+
+        if (!binding.lineCheckbox.isChecked()) {
+            for (int i = 0; i < repeat; i++) {
+                if (firstRepeat) {
+                    textRepeat = textToRepeat;
+                    firstRepeat = false;
+                } else {
+                    textRepeat = textRepeat.concat("").concat(textToRepeat);
+                }
+            }
+        } else {
+            for (int i = 0; i < repeat; i++) {
+                if (firstRepeat) {
+                    textRepeat = textToRepeat;
+                    firstRepeat = false;
+                } else {
+                    textRepeat = textRepeat.concat(System.lineSeparator()).concat(textToRepeat);
+                }
+            }
+        }
+
+        binding.repeatedOutput.setText(textRepeat);
+        _saveHistory();
     }
 
 
@@ -161,6 +189,12 @@ public class TextRepeaterActivity extends AppCompatActivity {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(ContextCompat.getColor(this, R.color.appbar));
 
+        Native aNative = new Native(this);
+        aNative.ShowNative(this, findViewById(R.id.native_container),1);
+
+        AdsManager adsManager = new AdsManager(this);
+        helper = new InterstitialAD(this,this,adsManager);
+
         binding.imageView3.setOnClickListener(view -> {
             onBackPressed();
         });
@@ -172,12 +206,6 @@ public class TextRepeaterActivity extends AppCompatActivity {
 
     private void initializeLogic() {
         lineNumber = 1.0d;
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        finish();
     }
 
     @Override
@@ -260,4 +288,21 @@ public class TextRepeaterActivity extends AppCompatActivity {
         return getResources().getDisplayMetrics().widthPixels;
     }
 
+    @SuppressLint("MissingSuperCall")
+    @Override
+    public void onBackPressed() {
+        AdsManager adsManager = new AdsManager(this);
+        InterstitialAD helper = new InterstitialAD(this,this,adsManager);
+        helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+            @Override
+            public void onAdLoadFailed() {
+                finish();
+            }
+
+            @Override
+            public void onInterstitialDismissed() {
+                finish();
+            }
+        });
+    }
 }

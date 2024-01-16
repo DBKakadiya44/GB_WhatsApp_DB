@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.core.content.ContextCompat;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -16,6 +17,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
+import com.db.gbwhatsappdb.ADS.Native;
 import com.db.gbwhatsappdb.R;
 import com.db.gbwhatsappdb.databinding.ActivityDirectMessageBinding;
 import com.hbb20.CountryCodePicker;
@@ -27,6 +31,7 @@ public class DirectMessageActivity extends AppCompatActivity {
     EditText messageBody;
     AppCompatEditText phoneNumber;
     TextView sendBtn;
+    InterstitialAD helper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,8 +43,19 @@ public class DirectMessageActivity extends AppCompatActivity {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(ContextCompat.getColor(this, R.color.appbar));
 
+        Native aNative = new Native(this);
+        aNative.ShowNative(this, findViewById(R.id.native_container),1);
+
+        AdsManager adsManager = new AdsManager(this);
+        helper = new InterstitialAD(this,this,adsManager);
+
         binding.imageView3.setOnClickListener(view -> {
             onBackPressed();
+        });
+
+        binding.btngenerate.setOnClickListener(view -> {
+            binding.editTextCarrierNumber.setText("");
+            binding.directchatEditTextMessageBox.setText("");
         });
 
         try {
@@ -78,7 +94,19 @@ public class DirectMessageActivity extends AppCompatActivity {
                     sb.append(str);
                     sb.append(obj);
                     directChat.saveChatToDB(sb.toString(), obj2);
-                    startActivity(intent);
+
+                    helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                        @Override
+                        public void onAdLoadFailed() {
+                            startActivity(intent);
+                        }
+                        @Override
+                        public void onInterstitialDismissed() {
+                            startActivity(intent);
+                        }
+                    });
+
+
                 } else {
                     Toast.makeText(DirectMessageActivity.this, "WhatsApp not installed on your device", Toast.LENGTH_SHORT).show();
                 }
@@ -97,6 +125,23 @@ public class DirectMessageActivity extends AppCompatActivity {
         } catch (PackageManager.NameNotFoundException unused) {
             return false;
         }
+    }
+    @SuppressLint("MissingSuperCall")
+    @Override
+    public void onBackPressed() {
+        AdsManager adsManager = new AdsManager(this);
+        InterstitialAD helper = new InterstitialAD(this,this,adsManager);
+        helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+            @Override
+            public void onAdLoadFailed() {
+                finish();
+            }
+
+            @Override
+            public void onInterstitialDismissed() {
+                finish();
+            }
+        });
     }
 
 }

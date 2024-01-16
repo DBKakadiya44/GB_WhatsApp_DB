@@ -45,36 +45,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/bannerLayout"
         app:layout_constraintTop_toBottomOf="@+id/constraintLayout">
-
-        <!--<LinearLayout
-            android:id="@+id/llnophoto"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView
-                android:layout_width="@dimen/_150sdp"
-                android:layout_height="@dimen/_150sdp"
-                android:src="@drawable/nophoto" />
-
-            <TextView
-                android:id="@+id/nodata"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="Saved Status Not Found"
-                android:textColor="@color/lightgreen"
-                android:textSize="@dimen/_18sdp"
-                android:textStyle="bold" />
-
-        </LinearLayout>-->
 
         <FrameLayout
             android:id="@+id/framesave"
@@ -82,5 +54,15 @@
             android:layout_height="match_parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:id="@+id/bannerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

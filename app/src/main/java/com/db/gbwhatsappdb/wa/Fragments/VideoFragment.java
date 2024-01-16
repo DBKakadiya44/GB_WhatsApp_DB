@@ -23,6 +23,9 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
+import com.db.gbwhatsappdb.ADS.Native;
 import com.db.gbwhatsappdb.R;
 import com.db.gbwhatsappdb.wa.Adapter.VideoAdapter;
 import com.db.gbwhatsappdb.wa.Models.Status;
@@ -58,6 +61,12 @@ public class VideoFragment extends Fragment {
         container = view.findViewById(R.id.videos_container);
         swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
         messageTextView = view.findViewById(R.id.messageTextVideo);
+
+        Native aNative = new Native(getActivity());
+        aNative.ShowNative(getActivity(), view.findViewById(R.id.native_container),1);
+
+        AdsManager adsManager = new AdsManager(getContext());
+        InterstitialAD helper = new InterstitialAD(getContext(),getActivity(),adsManager);
 
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());

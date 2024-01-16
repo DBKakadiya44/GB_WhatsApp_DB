@@ -1,5 +1,6 @@
 package com.db.gbwhatsappdb.WABusiness;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
@@ -7,6 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +16,9 @@ import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.viewpager.widget.ViewPager;
 
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.BannerAD;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
 import com.db.gbwhatsappdb.R;
 import com.db.gbwhatsappdb.WABusiness.adapters.ShowImagesAdapter;
 import com.db.gbwhatsappdb.WABusiness.util_items.Utils;
@@ -41,6 +46,9 @@ public class FullViewActivity extends AppCompatActivity {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(ContextCompat.getColor(this, R.color.appbar));
 
+        LinearLayout banner = findViewById(R.id.bannerLayout);
+        BannerAD bannerAd = new BannerAD(this, banner);
+        bannerAd.loadBannerAd();
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
@@ -138,9 +146,21 @@ public class FullViewActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        AdsManager adsManager = new AdsManager(this);
+        InterstitialAD helper = new InterstitialAD(this,this,adsManager);
+        helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+            @Override
+            public void onAdLoadFailed() {
+                finish();
+            }
+
+            @Override
+            public void onInterstitialDismissed() {
+                finish();
+            }
+        });
     }
 }

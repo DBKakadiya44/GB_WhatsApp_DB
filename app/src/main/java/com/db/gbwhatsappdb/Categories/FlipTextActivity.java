@@ -3,6 +3,7 @@ package com.db.gbwhatsappdb.Categories;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -11,6 +12,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.db.gbwhatsappdb.ADS.AdsManager;
+import com.db.gbwhatsappdb.ADS.InterstitialAD;
+import com.db.gbwhatsappdb.ADS.Native;
 import com.db.gbwhatsappdb.R;
 import com.db.gbwhatsappdb.databinding.ActivityFlipTextBinding;
 
@@ -26,6 +30,12 @@ public class FlipTextActivity extends AppCompatActivity {
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(ContextCompat.getColor(this, R.color.appbar));
+
+        Native aNative = new Native(this);
+        aNative.ShowNative(this, findViewById(R.id.native_container),1);
+
+        AdsManager adsManager = new AdsManager(this);
+        InterstitialAD helper = new InterstitialAD(this,this,adsManager);
 
         binding.imageView3.setOnClickListener(view -> {
             onBackPressed();
@@ -576,8 +586,20 @@ public class FlipTextActivity extends AppCompatActivity {
         });
 
         binding.btngenerate.setOnClickListener(view -> {
-            ((ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("Text", binding.tvgenerated.getText().toString()));
-            Toast.makeText(FlipTextActivity.this, "Text Copied!", Toast.LENGTH_SHORT).show();
+
+            helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                @Override
+                public void onAdLoadFailed() {
+                    ((ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("Text", binding.tvgenerated.getText().toString()));
+                    Toast.makeText(FlipTextActivity.this, "Text Copied!", Toast.LENGTH_SHORT).show();
+                }
+                @Override
+                public void onInterstitialDismissed() {
+                    ((ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("Text", binding.tvgenerated.getText().toString()));
+                    Toast.makeText(FlipTextActivity.this, "Text Copied!", Toast.LENGTH_SHORT).show();
+                }
+            });
+
         });
 
         binding.btncopy.setOnClickListener(view -> {
@@ -585,9 +607,42 @@ public class FlipTextActivity extends AppCompatActivity {
             Toast.makeText(FlipTextActivity.this, "Text Copied!", Toast.LENGTH_SHORT).show();
         });
 
+        binding.btnshare.setOnClickListener(view -> {
+            helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+                @Override
+                public void onAdLoadFailed() {
+                    binding.tvgenerated.setText("");
+                    binding.editText.setText("");
+                }
+                @Override
+                public void onInterstitialDismissed() {
+                    binding.tvgenerated.setText("");
+                    binding.editText.setText("");
+                }
+            });
+        });
+
         binding.btndelete.setOnClickListener(view -> {
             binding.tvgenerated.setText("");
             binding.editText.setText("");
+        });
+    }
+
+    @SuppressLint("MissingSuperCall")
+    @Override
+    public void onBackPressed() {
+        AdsManager adsManager = new AdsManager(this);
+        InterstitialAD helper = new InterstitialAD(this,this,adsManager);
+        helper.showCounterInterstitialAd(new InterstitialAD.AdLoadListeners() {
+            @Override
+            public void onAdLoadFailed() {
+                finish();
+            }
+
+            @Override
+            public void onInterstitialDismissed() {
+                finish();
+            }
         });
     }
 }

@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
 
+import com.db.gbwhatsappdb.ADS.Native;
 import com.db.gbwhatsappdb.R;
 import com.db.gbwhatsappdb.WABusiness.adapters.WhatsappStatusAdapter;
 import com.db.gbwhatsappdb.WABusiness.all_interfaces.FileListWhatsappClickInterface;
@@ -35,6 +36,10 @@ public class WhatsappImageFragment extends Fragment implements FileListWhatsappC
                              Bundle savedInstanceState) {
         binding = inflate(inflater, R.layout.fragment_whatsapp_image, container, false);
         initViews();
+
+        Native aNative = new Native(getActivity());
+        aNative.ShowNative(getActivity(), binding.nativeContainer,1);
+
         return binding.getRoot();
     }
 
